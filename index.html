@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Красивый чистый слайдер</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f0f1a;
+      min-height: 100vh;
+      padding: 40px 20px;
+      color: white;
+    }
+
+    .slider-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+
+    .slider {
+      display: flex;
+      transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+      will-change: transform;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 520px;
+      position: relative;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 60px 80px;
+    }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 50%, transparent 80%);
+    }
+
+    .slide-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+    }
+
+    .slide h2 {
+      font-size: 3.4rem;
+      margin-bottom: 16px;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+      line-height: 1.1;
+    }
+
+    .slide p {
+      font-size: 1.3rem;
+      opacity: 0.9;
+      max-width: 520px;
+      line-height: 1.5;
+    }
+
+    /* Кнопки */
+    .slider-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 60px;
+      height: 60px;
+      background: rgba(30,30,50,0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50%;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .slider-btn:hover {
+      background: rgba(60,60,90,0.7);
+      transform: translateY(-50%) scale(1.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .prev { left: 25px; }
+    .next { right: 25px; }
+
+    /* Индикаторы (точки) */
+    .slider-dots {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 14px;
+      z-index: 10;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.35s ease;
+      border: 2px solid transparent;
+    }
+
+    .dot.active {
+      background: white;
+      transform: scale(1.3);
+      border-color: rgba(255,255,255,0.4);
+    }
+  </style>
+</head>
+<body>
+
+<div class="slider-wrapper">
+  <div class="slider" id="slider">
+
+    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400');">
+      <div class="slide-content">
+        <h2>Горы зовут</h2>
+        <p>Там, где заканчивается асфальт и начинаются настоящие приключения</p>
+      </div>
+    </div>
+
+    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400');">
+      <div class="slide-content">
+        <h2>Океан внутри</h2>
+        <p>Бесконечная синева, которая лечит душу лучше любых слов</p>
+      </div>
+    </div>
+
+    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1400');">
+      <div class="slide-content">
+        <h2>Лесной шепот</h2>
+        <p>Место, где время замедляется, а мысли становятся чище</p>
+      </div>
+    </div>
+
+    <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1400');">
+      <div class="slide-content">
+        <h2>Туман и тишина</h2>
+        <p>Когда природа надевает самое красивое платье</p>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="slider-btn prev" onclick="prevSlide()">←</button>
+  <button class="slider-btn next" onclick="nextSlide()">→</button>
+
+  <div class="slider-dots" id="dots"></div>
+</div>
+
+
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const slider = document.getElementById('slider');
+  const dotsContainer = document.getElementById('dots');
+
+  // Создаём точки
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.classList.add('dot');
+    if (i === 0) dot.classList.add('active');
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+  });
+
+  const dots = document.querySelectorAll('.dot');
+
+  function update() {
+    slider.style.transform = `translateX(-${current * 100}%)`;
+    
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === current);
+    });
+  }
+
+  function nextSlide() {
+    current = (current + 1) % slides.length;
+    update();
+  }
+
+  function prevSlide() {
+    current = (current - 1 + slides.length) % slides.length;
+    update();
+  }
+
+  function goToSlide(index) {
+    current = index;
+    update();
+  }
+
+  // Автопрокрутка (можно убрать)
+  setInterval(nextSlide, 5500);
+
+  // Инициализация
+  update();
+</script>
+
+</body>
+</html>
